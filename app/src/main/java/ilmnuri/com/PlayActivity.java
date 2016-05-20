@@ -63,13 +63,12 @@ public class PlayActivity extends BaseActivity {
         chechReadStoragePermission();
         initUI();
 
-        File direct = new File(Api.localPath);
-
-        if (!direct.exists()) {
-            direct.mkdirs();
+        dir = new File(getExternalFilesDir(null), "audio");
+        if (!dir.exists()) {
+            dir.mkdir();
         }
 
-        if (Utils.checkFileExist(Api.localPath + "/" + fileName)) {
+        if (Utils.checkFileExist(dir.getPath() + "/" + fileName)) {
 //            playAudio();
             if (readExternalStoragePermission) {
                 initMediaPlayer();
@@ -134,7 +133,7 @@ public class PlayActivity extends BaseActivity {
                     }
 
                     final int dl_progress = (int) ((bytes_downloaded * 100l) / bytes_total);
-//                    EventBus.getDefault().post(AudioEvent.resume());
+//                    EventBus.getDefault().post(AudioEvent.download());
 
                     runOnUiThread(new Runnable() {
 

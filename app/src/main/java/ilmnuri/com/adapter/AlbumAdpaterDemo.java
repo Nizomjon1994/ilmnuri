@@ -1,5 +1,6 @@
 package ilmnuri.com.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -13,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +25,8 @@ import ilmnuri.com.PlayActivity;
 import ilmnuri.com.R;
 import ilmnuri.com.event.AudioEvent;
 import ilmnuri.com.model.AlbumModel;
-import ilmnuri.com.model.Api;
 import ilmnuri.com.model.Audio;
+import ilmnuri.com.model.Global;
 import ilmnuri.com.utility.Utils;
 
 /**
@@ -34,16 +36,19 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
 
     private Context mContext;
     private AlbumModel mAlbumModel;
-    private List<Audio> mAudios;
     private OnItemClickListener mOnItemClickListener;
     private List<ViewHolder> mViewHolders = new ArrayList<>();
     Handler handler;
-    private int currentSize;
+    File dir;
 
     public AlbumAdpaterDemo(Context context, AlbumModel albumModel, OnItemClickListener listener) {
         mContext = context;
         mAlbumModel = albumModel;
         this.mOnItemClickListener = listener;
+        dir = new File(context.getExternalFilesDir(null), "audio");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
     }
 
     public void deleteItem(int position) {
@@ -63,28 +68,20 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         Audio audio = getItem(position);
-
-        if (holder.tvAlbumTitle != null) {
-            holder.tvAlbumTitle.setText(audio.getTrackName().replace(".mp3", "").replace("_", " "));
-        }
-        if (holder.audioSize != null) {
-            holder.audioSize.setText(audio.getTrackSize());
-        }
-
-        if (Utils.checkFileExist(Api.localPath + "/" + mAlbumModel.getAudios().get(position).getTrackName())) {
-            if (holder.btnDownload != null) {
-                holder.btnDownload.setVisibility(View.GONE);
-            }
-            if (holder.btnDelete != null) {
-                holder.btnDelete.setVisibility(View.VISIBLE);
-            }
+        boolean isDownloading = Global.getInstance().checkAudio(audio);
+        if (isDownloading) {
+            holder.activeSeekBar();
         } else {
-            if (holder.btnDelete != null) {
-                holder.btnDelete.setVisibility(View.GONE);
-            }
-            if (holder.btnDownload != null) {
-                holder.btnDownload.setVisibility(View.VISIBLE);
-            }
+            holder.unActiveSeekBar();
+        }
+        holder.tvAlbumTitle.setText(audio.getTrackName().replace(".mp3", "").replace("_", " "));
+        holder.audioSize.setText(audio.getTrackSize());
+        if (Utils.checkFileExist(dir.getPath() + "/" + mAlbumModel.getAudios().get(position).getTrackName())) {
+            holder.btnDownload.setVisibility(View.GONE);
+            holder.btnDelete.setVisibility(View.VISIBLE);
+        } else {
+            holder.btnDelete.setVisibility(View.GONE);
+            holder.btnDownload.setVisibility(View.VISIBLE);
         }
     }
 
@@ -107,9 +104,8 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
                 for (ViewHolder vh : mViewHolders) {
                     if (vh instanceof ViewHolder) {
                         Audio audio = mAlbumModel.getAudios().get(vh.getAdapterPosition());
-                        if (audio != null && audio.getTrackId() == event.getId()) {
-                            currentSize = event.getCurrent_size();
-                            vh.download();
+                        if (audio != null && audio.getTrackId() == (event.getAudio().getTrackId()) && audio.getTrackName().equals(audio.getTrackName())) {
+                            vh.setSeekBarAsPlayed(true);
                         }
                     }
                 }
@@ -118,8 +114,8 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
                 for (ViewHolder vh : mViewHolders) {
                     if (vh instanceof ViewHolder) {
                         Audio audio = mAlbumModel.getAudios().get(vh.getAdapterPosition());
-                        if (audio != null && audio.getTrackId() == event.getId()) {
-                            vh.stop();
+                        if (audio != null && audio.getTrackId() == (event.getAudio().getTrackId()) && audio.getTrackName().equals(audio.getTrackName())) {
+                            vh.closeSeekBar(true);
                         }
                     }
                 }
@@ -164,13 +160,12 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
             handler = new Handler();
         }
 
-
         @OnClick(R.id.rl_item_album)
         void clickItem() {
             Intent intent = new Intent(mContext, PlayActivity.class);
             intent.putExtra("category", mAlbumModel.getCategory());
             intent.putExtra("url", mAlbumModel.getCategory() + "/" + mAlbumModel.getAlbum() + "/" + mAlbumModel.getAudios().get(getAdapterPosition()).getTrackName());
-            notifyDataSetChanged();
+            mProgressBar.setVisibility(View.INVISIBLE);
             mContext.startActivity(intent);
         }
 
@@ -189,52 +184,96 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
             }
         }
 
-        public void download() {
-            if (mProgressBar != null) {
-                mProgressBar.setVisibility(View.VISIBLE);
+        public void setSeekBarAsPlayed(boolean isSeekBar) {
+            if (isSeekBar) {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mProgressBar != null) {
+                            mProgressBar.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+                updateProgress();
             }
-            handler.postDelayed(updateProgressRunnable, 100);
         }
 
-        public void stop() {
-            if (mProgressBar != null) {
-                mProgressBar.setVisibility(View.GONE);
-            }
-            if (btnDelete != null) {
-                btnDelete.setVisibility(View.VISIBLE);
-            }
-            if (btnDownload != null) {
-                btnDownload.setVisibility(View.GONE);
-            }
+        public void closeSeekBar(boolean isSeekBar) {
+            if (isSeekBar) {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mProgressBar != null) {
+                            mProgressBar.setVisibility(View.GONE);
+                            btnDownload.setVisibility(View.GONE);
+                            btnDelete.setVisibility(View.VISIBLE);
+                            notifyItemChanged(getAdapterPosition());
+                            Global.getInstance().setAudio(null);
+                            handler.removeCallbacks(mUpdateTimeTask);
+                        }
+                    }
+                });
 
-            handler.removeCallbacks(updateProgressRunnable);
-
+            }
         }
 
-        private Runnable updateProgressRunnable = new Runnable() {
-            @Override
+        private Runnable mUpdateTimeTask = new Runnable() {
             public void run() {
+                final int current_position = Global.getInstance().getCurrent_position();
+
                 if (mProgressBar != null) {
-                    mProgressBar.setProgress(currentSize);
+                    mProgressBar.setProgress(current_position);
                 }
+
+
+                handler.postDelayed(this, 100);
             }
         };
 
+        private void activeSeekBar() {
 
-    }
+            ((Activity) mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mProgressBar != null) {
+                        mProgressBar.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+
+            removeCallback();
+            final int position = Global.getInstance().getCurrent_position();
+
+            if (mProgressBar != null) {
+                mProgressBar.setProgress(position);
+            }
 
 
-    public int getProgressPercentage(long currentDuration, long totalDuration) {
-        Double percentage;
+            updateProgress();
+        }
 
-        long currentSeconds = (int) (currentDuration / 1000);
-        long totalSeconds = (int) (totalDuration / 1000);
+        private void unActiveSeekBar() {
 
-        // calculating percentage
-        percentage = (((double) currentSeconds) / totalSeconds) * 100;
+            ((Activity) mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mProgressBar != null) {
+                        mProgressBar.setVisibility(View.GONE);
+                    }
 
-        // return percentage
-        return percentage.intValue();
+                }
+            });
+
+            removeCallback();
+        }
+
+        public void removeCallback() {
+            handler.removeCallbacks(mUpdateTimeTask);
+        }
+
+        public void updateProgress() {
+            handler.postDelayed(mUpdateTimeTask, 100);
+        }
     }
 
     public interface OnItemClickListener {

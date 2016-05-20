@@ -1,15 +1,14 @@
 package ilmnuri.com;
 
 import android.app.DownloadManager;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -24,6 +23,8 @@ import ilmnuri.com.adapter.AlbumAdpaterDemo;
 import ilmnuri.com.event.AudioEvent;
 import ilmnuri.com.model.AlbumModel;
 import ilmnuri.com.model.Api;
+import ilmnuri.com.model.Audio;
+import ilmnuri.com.reciever.DownloadHelper;
 import ilmnuri.com.utility.Utils;
 
 
@@ -50,11 +51,9 @@ public class AlbumActivity extends BaseActivity {
         setContentView(R.layout.activity_album);
         EventBus.getDefault().register(this);
         mGson = new Gson();
-
         String albumBody = getIntent().getStringExtra("album");
         Type type = new TypeToken<AlbumModel>() {
         }.getType();
-
         albumModel = mGson.fromJson(albumBody, type);
         initView();
 
@@ -68,7 +67,6 @@ public class AlbumActivity extends BaseActivity {
 
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -78,46 +76,41 @@ public class AlbumActivity extends BaseActivity {
         if (!dir.exists()) {
             dir.mkdir();
         }
-
-
         tvTitle.setText(albumModel.getCategory() + "/" + albumModel.getAlbum());
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         adpaterDemo = new AlbumAdpaterDemo(this, albumModel, mOnItemClickListener);
         mRecyclerView.setAdapter(adpaterDemo);
-
     }
 
     AlbumAdpaterDemo.OnItemClickListener mOnItemClickListener = new AlbumAdpaterDemo.OnItemClickListener() {
         @Override
         public void onDeleteListener(AlbumModel model, int position) {
-
             String title = model.getAudios().get(position).getTrackName();
-            alertDelete(title);
-            adpaterDemo.deleteItem(position);
+            alertDelete(title, position);
         }
 
         @Override
         public void onDownloadListener(AlbumModel model, int position) {
-
             String url = model.getCategory() + "/" + model.getAlbum() + "/" + model.getAudios().get(position).getTrackName();
-            int id = model.getAudios().get(position).getTrackId();
-            alertDownload(url, id);
-
+            Audio audio = model.getAudios().get(position);
+            alertDownload(url, audio);
         }
 
 
     };
 
 
-    private void alertDelete(final String title) {
+    private void alertDelete(final String title, final int position) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         // Yes button clicked
-                        Utils.deleteFile(Api.localPath + "/" + title);
+                        Utils.deleteFile(dir.getPath() + "/" + title);
                         Utils.showToast(AlbumActivity.this, "Darslik o'chirib tashlandi!");
+                        adpaterDemo.deleteItem(position);
+
 
                         break;
 
@@ -135,7 +128,7 @@ public class AlbumActivity extends BaseActivity {
                 .setNegativeButton("Yo'q", dialogClickListener).show();
     }
 
-    private void alertDownload(final String url, final int id) {
+    private void alertDownload(final String url, final Audio audio) {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
@@ -144,18 +137,19 @@ public class AlbumActivity extends BaseActivity {
                         String filePath = Api.BaseUrl + url;
                         fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
 
-                        downloadAudio(filePath, fileName, id);
-//                        Intent intent = new Intent(AlbumActivity.this, PlayActivity.class);
-//                        intent.putExtra("category", mAlbumModel.getCategory());
-//                        intent.putExtra("url", mAlbumModel.getCategory() + "/" + mAlbumModel.getAlbum() + "/" + mAlbumModel.getItems().get(position));
-//                        notifyDataSetChanged();
-//                        mContext.startActivity(intent);
+//                        downloadAudio(filePath, fileName, id);
+                        Gson gson = new Gson();
+
+                        Intent intent = new Intent(AlbumActivity.this, DownloadHelper.class);
+                        intent.putExtra("file_path", filePath);
+                        intent.putExtra("file_name", fileName);
+
+                        intent.putExtra("audio", gson.toJson(audio));
+                        startService(intent);
+
                         break;
 
                     case DialogInterface.BUTTON_NEGATIVE:
-                        // No button clicked
-                        // do nothing
-//                        notifyDataSetChanged();
                         break;
                 }
             }
@@ -173,74 +167,15 @@ public class AlbumActivity extends BaseActivity {
         }
     }
 
-
-    private void downloadAudio(String url, String fileName, final int id) {
-//        new DownloadFileAsync().execute(url);
-
-        downloadManager = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri download_uri = Uri.parse(url);
-
-        DownloadManager.Request request = new DownloadManager.Request(download_uri);
-        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI | DownloadManager.Request.NETWORK_MOBILE);
-        request.setAllowedOverRoaming(false);
-        request.setDescription("Test");
-        request.setTitle("Test");
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-        request.setDestinationInExternalFilesDir(this, dir.getName(), fileName);
-        final long enqueue = downloadManager.enqueue(request);
-//        mProgressDialog.show();
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                boolean downloading = true;
-
-                while (downloading) {
-
-                    DownloadManager.Query q = new DownloadManager.Query();
-                    q.setFilterById(enqueue);
-
-                    Cursor cursor = downloadManager.query(q);
-                    cursor.moveToFirst();
-                    int bytes_downloaded = cursor.getInt(cursor
-                            .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-                    final int bytes_total = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-
-                    if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL) {
-                        downloading = false;
-//                        mProgressDialog.dismiss();
-//                        if (readExternalStoragePermission) {
-//                            Utils.showToast(PlayActivity.this, "Darslik yuklandi, endi ijro etilmoqda");
-//                            initMediaPlayer();
-//                        }
-                        EventBus.getDefault().post(AudioEvent.stop(id));
-                    } else {
-                        if (cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_FAILED) {
-//                            mProgressDialog.dismiss();
-                            Utils.showToast(AlbumActivity.this, "Yuklashda xatolik bo'ldi?");
-
-                        }
-                    }
-
-                    final int dl_progress = (int) ((bytes_downloaded * 100l) / bytes_total);
-//                    EventBus.getDefault().post(AudioEvent.resume());
-
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-
-                            EventBus.getDefault().post(AudioEvent.resume(id, dl_progress, bytes_total));
-
-                        }
-                    });
-
-                    cursor.close();
-                }
-
-            }
-        }).start();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 }

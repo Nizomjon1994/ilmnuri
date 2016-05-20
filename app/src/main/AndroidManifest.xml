@@ -55,9 +55,11 @@
             android:theme="@style/AppTheme">
         </activity>
 
-        <receiver
+        <service
             android:name=".reciever.DownloadHelper"
-            android:enabled="true"/>
+            android:exported="true">
+
+        </service>
     </application>
 
 </manifest>

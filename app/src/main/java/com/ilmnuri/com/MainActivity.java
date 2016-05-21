@@ -43,15 +43,15 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
-
-import java.util.ArrayList;
-
 import com.ilmnuri.com.adapter.DesignDemoRecyclerAdapter;
 import com.ilmnuri.com.model.AlbumModel;
 import com.ilmnuri.com.model.Audio;
 import com.ilmnuri.com.model.Category;
 import com.ilmnuri.com.model.Global;
 import com.ilmnuri.com.utility.Utils;
+
+import java.util.ArrayList;
+
 
 
 public class MainActivity extends BaseActivity {

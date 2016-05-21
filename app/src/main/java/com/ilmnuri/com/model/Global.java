@@ -1,6 +1,5 @@
 package com.ilmnuri.com.model;
 
-
 import java.util.ArrayList;
 
 /**

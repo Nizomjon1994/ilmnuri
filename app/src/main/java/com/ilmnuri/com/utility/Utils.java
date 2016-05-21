@@ -21,6 +21,8 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ilmnuri.com.R;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -36,7 +38,6 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.ilmnuri.com.R;
 
 /**
  * Created by hic on 2015-11-20.

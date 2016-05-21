@@ -4,16 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import java.util.ArrayList;
-
-import javax.inject.Inject;
-
 import com.ilmnuri.com.api.IlmApi;
 import com.ilmnuri.com.model.AlbumModel;
 import com.ilmnuri.com.model.Global;
 import com.ilmnuri.com.model.ListAlbumResult;
 import com.ilmnuri.com.utility.CacheUtils;
 import com.ilmnuri.com.utility.Utils;
+
+import java.util.ArrayList;
+
+import javax.inject.Inject;
+
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;

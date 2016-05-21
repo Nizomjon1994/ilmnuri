@@ -1,9 +1,9 @@
 package com.ilmnuri.com.utility;
 
+import com.ilmnuri.com.model.AlbumModel;
 
 import java.util.ArrayList;
 
-import com.ilmnuri.com.model.AlbumModel;
 
 public class QuickSort {
 

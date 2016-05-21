@@ -5,11 +5,11 @@ import android.text.TextUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.ilmnuri.com.model.AlbumModel;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import com.ilmnuri.com.model.AlbumModel;
 
 /**
  * Created by User on 19.05.2016.
@@ -29,7 +29,7 @@ public class CacheUtils {
     public void saveToCache(ArrayList<AlbumModel> albumModels) {
         mAlbumModels = albumModels;
         try {
-            FileUtils.stringToFile(mContext, mGson.toJson(mAlbumModels), AUDIOS_JSON);
+           FileUtils.stringToFile(mContext, mGson.toJson(mAlbumModels), AUDIOS_JSON);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -44,7 +44,7 @@ public class CacheUtils {
 
     private ArrayList<AlbumModel> getAlbumModels(String name) {
         try {
-            String json = FileUtils.fileToString(mContext, name);
+            String json =FileUtils.fileToString(mContext, name);
             if (!TextUtils.isEmpty(json)) {
                 Type type = new TypeToken<ArrayList<AlbumModel>>() {
                 }.getType();

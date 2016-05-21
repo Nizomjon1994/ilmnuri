@@ -14,8 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.com.ilmnuri.com.R;
 import com.ilmnuri.com.PlayActivity;
+import com.ilmnuri.com.R;
 import com.ilmnuri.com.event.AudioEvent;
 import com.ilmnuri.com.model.AlbumModel;
 import com.ilmnuri.com.model.Audio;

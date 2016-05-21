@@ -7,9 +7,6 @@ import com.ilmnuri.com.model.Audio;
  */
 public class AudioEvent {
     private Type type;
-    private int current_size;
-    private int total_size;
-    private int id;
     private Audio mAudio;
 
     public static AudioEvent download(Audio id) {
@@ -37,19 +34,9 @@ public class AudioEvent {
         return mAudio;
     }
 
-    public int getId() {
-        return id;
-    }
 
     public Type getType() {
         return type;
     }
 
-    public int getTotal_size() {
-        return total_size;
-    }
-
-    public int getCurrent_size() {
-        return current_size;
-    }
 }

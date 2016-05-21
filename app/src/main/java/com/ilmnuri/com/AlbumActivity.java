@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.com.ilmnuri.com.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ilmnuri.com.adapter.AlbumAdpaterDemo;

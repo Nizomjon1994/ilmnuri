@@ -8,7 +8,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.com.ilmnuri.com.R;
 
 public class AboutUsActivity extends AppCompatActivity {
 

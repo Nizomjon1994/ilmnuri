@@ -13,11 +13,11 @@
 //import android.widget.ProgressBar;
 //import android.widget.TextView;
 //
-//import com.ilmnuri.com.PlayActivity;
+//import PlayActivity;
 //import com.ilmnuri.com.R;
 //import com.ilmnuri.com.Utility.Utils;
-//import com.ilmnuri.com.model.AlbumModel;
-//import com.ilmnuri.com.model.Api;
+//import AlbumModel;
+//import Api;
 //
 //
 //public class AlbumAdapter extends BaseAdapter {

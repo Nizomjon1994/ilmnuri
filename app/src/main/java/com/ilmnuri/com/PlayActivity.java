@@ -23,13 +23,13 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.com.ilmnuri.com.R;
 import com.ilmnuri.com.model.Api;
 import com.ilmnuri.com.model.Category;
 import com.ilmnuri.com.utility.Utils;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
+
 
 public class PlayActivity extends BaseActivity {
 

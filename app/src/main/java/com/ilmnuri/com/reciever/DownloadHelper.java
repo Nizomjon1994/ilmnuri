@@ -69,8 +69,8 @@ public class DownloadHelper extends Service {
             final long enqueue = downloadManager.enqueue(request);
 
             specialFeedItem.put(enqueue, mAudio);
-            Global.getInstance().setAudio(mAudio);
             EventBus.getDefault().post(AudioEvent.download(mAudio));
+            Global.getInstance().setAudio(mAudio);
 
             new Thread(new Runnable() {
 
@@ -106,6 +106,7 @@ public class DownloadHelper extends Service {
 
                             }
                         }
+
 
 
 

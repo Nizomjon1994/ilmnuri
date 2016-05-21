@@ -121,8 +121,6 @@ public class AlbumAdpaterDemo extends RecyclerView.Adapter<AlbumAdpaterDemo.View
                     }
                 }
         }
-
-
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

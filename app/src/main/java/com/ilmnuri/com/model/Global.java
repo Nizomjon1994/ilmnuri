@@ -54,7 +54,7 @@ public class Global {
     public boolean checkAudio(Audio audio) {
         if (getAudio() != null) {
 
-            if (getAudio().equals(audio)) {
+            if (getAudio().getTrackId()==audio.getTrackId() && getAudio().getTrackName().equals(audio.getTrackName())) {
                 return true;
             } else {
                 return false;

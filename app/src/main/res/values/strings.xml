@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">com.ilmnuri</string>
+    <string name="app_name">ilmnuri</string>
 
     <string name="Loading">Darslik yuklanmoqda…</string>
     <string name="registering_message">Xabarlar yuklanmoqda</string>
